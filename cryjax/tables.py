@@ -29,6 +29,7 @@ TABLE_SHA256 = {
 }
 ALTITUDES = tuple(TABLE_SHA256)
 SUBBOX_M = 300.0        # the only subbox the device sampler supports (multiplicity table nParticles300)
+NEGATIVE_PDF = "CRY PDF with negative weights (see cryjax.tables.negative_pdfs); refusing to build its CDF"
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,8 @@ class Pdf:
     weights: np.ndarray
 
     def cdf(self):
+        if np.any(self.weights < 0):
+            raise ValueError(NEGATIVE_PDF)
         total = self.weights.sum(axis=-1, keepdims=True)
         if np.any(total <= 0):
             raise ValueError("unreachable zero-weight PDF row must be handled explicitly")
@@ -76,7 +79,7 @@ def parse(text):
             raise ValueError("nonfinite CRY table value")
         if kind == "pdf":
             match = re.fullmatch(r"(\w+)::(\w+)\[([^,]+),([^,]+),(dis|lin|log)\]", name.strip())
-            if not match or np.any(array < 0):
+            if not match:
                 raise ValueError("malformed CRY PDF")
             key, binning, low, high, mode = match.groups()
             low, high = float(low), float(high)
@@ -94,6 +97,17 @@ def parse(text):
             raise ValueError("duplicate CRY table declaration")
         result[key] = value
     return result
+
+
+def negative_pdfs(tables):
+    """Names of the PDFs of a parsed table with negative weights, sorted.
+
+    The CRY 1.7 release table ``cosmics_11300.data`` has negative entries in its multiplicity PDFs for the 1, 3, 10
+    and 30 m subboxes (``nParticles001`` ... ``nParticles030``). CRY's C++ normalises each row by its signed sum and
+    builds a non-monotone cumulative sum from it; cryjax does not reproduce that and refuses to sample such a PDF.
+    The 300 m subbox PDFs it samples are not affected.
+    """
+    return sorted(k for k, v in tables.items() if isinstance(v, Pdf) and np.any(v.weights < 0))
 
 
 def _spectrum(energy, params):
@@ -157,6 +171,10 @@ def load(path=None, *, altitude_m=None, latitude=41.8, when="2021-06-21", subbox
     if not np.all(np.diff(primary)>0) or not np.all(np.diff(secondary)>0):
         raise ValueError("unordered CRY energy bins")
     needed = ["KEDist", "TimeDist", "CosThetaDist", "ChargeDist"]
+    negative = negative_pdfs(t)
+    used = ["nParticles300", "particleFractions", "latDist"] + [s+x for x in needed for s in SPECIES]
+    if any(name in negative for name in used):
+        raise ValueError("a PDF the sampler uses has negative weights: " + ", ".join(n for n in used if n in negative))
     zero_rows = {}
     for suffix in needed:
         for species in SPECIES:
@@ -164,7 +182,7 @@ def load(path=None, *, altitude_m=None, latitude=41.8, when="2021-06-21", subbox
             zero_rows[species+suffix] = np.flatnonzero(pdf.weights.sum(axis=1) == 0).tolist()
     return {"tables": t, "primary_pdf": p_pdf, "lifetime_s": float(lifetime), "primary_bin_weights": weight,
             "table_sha256": digest, "altitude_m": found[0], "latitude": latitude, "date": when,
-            "zero_rows": zero_rows, "subbox_m": SUBBOX_M}
+            "zero_rows": zero_rows, "negative_pdfs": negative, "subbox_m": SUBBOX_M}
 
 
 def main(argv=None):

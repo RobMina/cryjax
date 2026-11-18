@@ -50,6 +50,8 @@ def pdf_to_device(pdf, dtype):
     """Row-normalised CDFs of a table PDF; zero-weight rows get a safe padding and are marked invalid."""
     dtype = _dtype(dtype)
     values = pdf.weights
+    if np.any(values < 0):
+        raise ValueError(cry_tables.NEGATIVE_PDF)
     total = values.sum(axis=-1, keepdims=True)
     safe = np.where(total > 0, values / np.maximum(total, 1e-300), 1/values.shape[-1])
     cdf = np.cumsum(safe, axis=-1)

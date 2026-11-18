@@ -117,3 +117,17 @@ def test_seed_admission_and_all_bits():
     a = jax.random.key_data(D.make_key(5))
     b = jax.random.key_data(D.make_key(5 + 2**32))
     assert not np.array_equal(a, b)
+
+
+def test_negative_weight_pdf_is_refused_on_device():
+    pdf = T.parse("pdf a::b[0,1,lin] = {{-1 2} {1 1}};")["a"]
+    for dtype in ("float32", "float64"):
+        with pytest.raises(ValueError, match="negative"):
+            D.pdf_to_device(pdf, dtype)
+
+
+def test_every_altitude_samples(data_dir):
+    for altitude in T.ALTITUDES:
+        t, meta = D.device_tables(T.table_path(altitude), dtype="float64")
+        out = D.raw(t, D.make_key(altitude + 1), 0.0, showers=2000, capacity=20000)
+        assert not bool(out["overflow"]) and not bool(out["invalid_pdf"]) and int(out["particles"]) >= 2000

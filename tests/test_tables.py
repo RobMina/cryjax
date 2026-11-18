@@ -11,10 +11,18 @@ def test_strict_parser_pdf_mean():
     assert data["a"].weights.shape == (2, 3)
     with pytest.raises(ValueError):
         data["a"].cdf()
-    for text in ("pdf a::b[0,1,lin] = {-1 1};", "parameter a={nan};", "unknown a={1};",
+    for text in ("pdf a::b[0,1] = {1 1};", "parameter a={nan};", "unknown a={1};",
                  "parameter a={1}; parameter a={2};"):
         with pytest.raises(ValueError):
             T.parse(text)
+
+
+def test_negative_weights_parse_but_never_sample():
+    data = T.parse("pdf a::b[0,1,lin] = {{-1 2} {1 1}}; pdf c::b[0,1,lin] = {1 1};")
+    assert T.negative_pdfs(data) == ["a"]
+    with pytest.raises(ValueError, match="negative"):
+        data["a"].cdf()
+    np.testing.assert_allclose(data["c"].cdf(), [[.5, 1]])
 
 
 def test_table_signature_fail_closed(tmp_path):
@@ -64,3 +72,11 @@ def test_latitude_and_date_move_the_rate(data_dir):
     base = T.load(data_dir / "cosmics_0.data")["lifetime_s"]
     assert T.load(data_dir / "cosmics_0.data", latitude=0.0)["lifetime_s"] != base     # geomagnetic cutoff
     assert T.load(data_dir / "cosmics_0.data", when="2014-04-01")["lifetime_s"] != base  # solar cycle
+
+
+def test_release_tables_negative_pdfs(data_dir):
+    """The 11300 m release table has negative multiplicity weights for the small subboxes only."""
+    small = ["nParticles001", "nParticles003", "nParticles010", "nParticles030"]
+    assert T.load(altitude_m=0)["negative_pdfs"] == []
+    assert T.load(altitude_m=2100)["negative_pdfs"] == []
+    assert T.load(altitude_m=11300)["negative_pdfs"] == small
