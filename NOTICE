@@ -1,0 +1,17 @@
+cryjax
+Copyright 2026 the Mu2e Genesis team (Mu2e Collaboration)
+
+Licensed under the Apache License, Version 2.0 (LICENSE), except as noted below.
+
+The table loader, the JAX sampler, the C ABI shim and the ctypes binding were extracted from mu2e-fastsim-core
+(mu2e-fastsim commit a058b04, modules cry_tables, cry_device, cry_native and native/cry/cry_shim.cc) and generalized
+to be experiment-neutral; the detector projection and acceptance stayed in mu2e-fastsim.
+
+cryjax re-implements the published CRY 1.7 model (Cosmic-ray Shower Library, Lawrence Livermore National
+Laboratory, UCRL-CODE-227323). CRY is distributed under its own BSD-style licence with an additional DOE notice,
+both reproduced in docs/third-party-cry.txt; they apply to CRY and to the parts of this package that reproduce it.
+The CRY sources and distribution tables are not part of this repository: users obtain them from LLNL, and the
+loader accepts only the release tables by SHA-256. cryjax is not produced, endorsed or supported by LLNL, the
+University of California or the U.S. Department of Energy.
+
+No experiment-internal inputs, conditions, data or physics results are part of this repository.

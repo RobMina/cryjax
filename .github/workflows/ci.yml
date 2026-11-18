@@ -1,0 +1,36 @@
+# Unit tests on every push to main and every pull request, on the JAX CPU backend. The CRY 1.7 release (sources and
+# tables) is downloaded from LLNL with a checksum check, and the shim is compiled, so the table, device and native
+# tests run in full. GPU runs are not part of CI.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pytest:
+    name: pytest (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: CRY 1.7 release and shim
+        run: bash cryjax/native/build-shim.sh "$RUNNER_TEMP/cry" | sed -n 's/^export //p' >> "$GITHUB_ENV"
+      - name: Test
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m pytest -q
