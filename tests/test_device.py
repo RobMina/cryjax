@@ -49,7 +49,7 @@ def test_raw_repeatability_units_and_overflow(setup):
     for name in a:
         np.testing.assert_array_equal(a[name], b[name])
     assert not a["overflow"] and not a["invalid_pdf"]
-    for name in ("ke", "position", "direction", "t", "clocks"):
+    for name in ("ke", "position", "direction", "t", "delay", "clocks"):
         assert a[name].dtype == np.dtype(dtype), name
     mask = np.asarray(a["mask"])
     assert int(a["particles"]) == int(np.sum(a["multiplicity"])) == np.sum(mask)
@@ -75,6 +75,18 @@ def test_conditional_energy_sampler_matches_table(data_dir, species):
     variance = 20000*probability*(1-probability)
     np.testing.assert_array_less(np.abs(observed-20000*probability), 7*np.sqrt(variance)+4)
     assert np.all(valid)
+
+
+def test_raw_delay_is_independent_of_the_clock_start(setup):
+    dtype, (tables, _) = setup
+    key = jax.random.key(145)
+    a = D.raw(tables, key, 0., showers=4096, capacity=20000, dtype=dtype)
+    b = D.raw(tables, key, 1000., showers=4096, capacity=20000, dtype=dtype)
+    mask = np.asarray(a["mask"])
+    np.testing.assert_array_equal(a["delay"], b["delay"])
+    assert np.all(np.isfinite(np.asarray(a["delay"])[mask]))
+    np.testing.assert_array_equal(np.asarray(a["t"])[mask],
+                                  (np.asarray(a["clocks"])[np.asarray(a["shower"])] + np.asarray(a["delay"]))[mask])
 
 
 def test_raw_program_has_no_host_callback(setup):

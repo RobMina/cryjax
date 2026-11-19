@@ -39,7 +39,9 @@ with DeviceSource(seed=1, dtype="float64") as source:      # altitude_m, latitud
 
 Lower level, inside your own jitted program: `tables, meta = cryjax.device.device_tables(dtype=...)`, then
 `cryjax.device.raw(tables, key, before, showers=N, capacity=M, dtype=...)`. Stream tags 0-14 of the key are used;
-draw your own quantities from tag 15 on.
+draw your own quantities from tag 15 on. `raw` returns each particle's absolute time `t` (the shower clock, started
+at `before`, plus the delay) and the drawn `delay` itself: in float32, take the delay from `delay`, not from
+`t - clock`, and keep any running clock in float64 on the host, as `DeviceSource` does (start each batch at 0).
 
 Compare the backends:
 

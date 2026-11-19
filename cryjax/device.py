@@ -120,9 +120,10 @@ def raw(t, key, before, *, showers, capacity, dtype="float64"):
 
     Returns per particle lane (``capacity`` lanes, ``mask`` marks the filled ones): ``shower`` (index in the batch),
     ``pdg`` (signed), ``ke`` (MeV), ``position`` (m, CRY frame, z = 0 plane), ``direction`` (unit vector), ``t``
-    (s, absolute: the shower's clock plus its delay); per shower: ``clocks`` (cumulative live time, s), ``primary_bin``
-    and ``multiplicity``; and the scalars ``particles``, ``overflow``, ``invalid_pdf``. Stream tags 0-14 of ``key``
-    are used; callers that draw more from the same key start at tag 15.
+    (s, absolute: the shower's clock plus its delay), ``delay`` (s, the drawn delay itself: independent of ``before``
+    and free of the rounding of ``t - clock`` in float32); per shower: ``clocks`` (cumulative live time, s),
+    ``primary_bin`` and ``multiplicity``; and the scalars ``particles``, ``overflow``, ``invalid_pdf``. Stream tags
+    0-14 of ``key`` are used; callers that draw more from the same key start at tag 15.
     """
     before = jnp.asarray(before, dtype)
     primary, good = draw(t["primary"], jnp.zeros(showers, jnp.int32), uniform(key, 0, (showers,), dtype),
@@ -159,7 +160,7 @@ def raw(t, key, before, *, showers, capacity, dtype="float64"):
     clocks = before + jnp.cumsum(-t["lifetime"]*jnp.log(uniform(key, 14, (showers,), dtype)))
     bad = jnp.any(~good | ~ok) | jnp.any(mask & ~(valid & energy_ok & time_ok & angle_ok & charge_ok))
     return {"shower": shower, "mask": mask, "pdg": pdg, "ke": ke, "position": position,
-            "direction": direction, "t": clocks[shower]+delay, "clocks": clocks,
+            "direction": direction, "t": clocks[shower]+delay, "delay": delay, "clocks": clocks,
             "primary_bin": pbin, "multiplicity": mult, "particles": count,
             "overflow": count > capacity, "invalid_pdf": bad}
 
@@ -169,6 +170,9 @@ def make_key(seed):
     if type(seed) is not int or not 0 <= seed < 2**64:
         raise ValueError("seed must be a uint64 integer")
     return jax.random.fold_in(jax.random.key(seed & 0xffffffff, impl="threefry2x32"), seed >> 32)
+
+
+_SERVED = ("shower", "pdg", "ke", "position", "direction", "t", "clocks", "particles", "overflow", "invalid_pdf")
 
 
 class DeviceSource:
@@ -205,7 +209,7 @@ class DeviceSource:
         # sampling dtype never accumulates live time across batches (where it would lose resolution).
         out = raw(self.tables, jax.random.fold_in(self.key, self.batches), 0.0,
                   showers=self.batch, capacity=self.capacity, dtype=self.dtype)
-        host = jax.device_get(out)
+        host = jax.device_get({k: out[k] for k in _SERVED})
         offset = self.before
         self.batches += 1
         if host["overflow"] or host["invalid_pdf"]:
