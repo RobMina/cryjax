@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cryjax"
-version = "0.1.0"
+version = "0.1.1"
 description = "The CRY 1.7 cosmic-ray shower model on JAX devices, with the C++ reference behind a small C ABI"
 readme = "README.md"
 license = {text = "Apache-2.0 AND BSD-3-Clause"}

@@ -7,6 +7,6 @@
 
 Raw showers only: projection onto a detector, energy cuts and acceptance loops are the experiment's.
 """
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .tables import ALTITUDES, PDG, SPECIES, TABLE_SHA256  # noqa: F401
