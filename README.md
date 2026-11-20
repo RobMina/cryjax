@@ -80,3 +80,8 @@ Python 3.10 to 3.13.
 
 Apache-2.0 for this package; CRY's BSD-style licence and the additional DOE notice (`docs/third-party-cry.txt`)
 apply to CRY and to the parts here that reproduce it. See `NOTICE`. cryjax is not produced or endorsed by LLNL.
+
+## Citing
+
+Please cite the release you used: `CITATION.cff` holds the metadata (GitHub's "Cite this repository" renders it), and
+each tagged release is archived on Zenodo with its own DOI.

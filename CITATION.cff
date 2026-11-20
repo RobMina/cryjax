@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "cryjax: the CRY 1.7 cosmic-ray shower model on JAX devices"
+version: "0.1.1"
+date-released: "2026-11-20"
+authors:
+  - family-names: Mina
+    given-names: Rob
+    affiliation: "University of Virginia"
+    orcid: "https://orcid.org/0000-0003-2241-8566"
+repository-code: "https://github.com/RobMina/cryjax"
+license:
+  - "Apache-2.0"
+  - "BSD-3-Clause"
+abstract: >-
+  cryjax samples correlated cosmic-ray showers from the CRY 1.7 tables on JAX devices (CPU or GPU, float32 or float64), and binds the C++ CRY reference through a small C ABI for device-vs-native comparisons. Release tables are external inputs admitted by SHA-256; the CRY licence and notice travel with the package.
+keywords:
+  - "cosmic rays"
+  - "CRY"
+  - "JAX"
+  - "GPU"
+  - "Monte Carlo"
+  - "particle physics"
+references:
+  - type: conference-paper
+    title: "Cosmic-ray shower generator (CRY) for Monte Carlo transport codes"
+    authors:
+      - family-names: Hagmann
+        given-names: "C."
+      - family-names: Lange
+        given-names: "D."
+      - family-names: Wright
+        given-names: "D."
+    year: 2007
+    collection-title: "2007 IEEE Nuclear Science Symposium Conference Record"
+    doi: "10.1109/NSSMIC.2007.4437209"
