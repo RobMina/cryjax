@@ -1,5 +1,7 @@
 # cryjax
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24418660.svg)](https://doi.org/10.5281/zenodo.24418660)
+
 The CRY 1.7 cosmic-ray shower model ([LLNL](https://nuclear.llnl.gov/simulations)) on JAX devices, next to the
 C++ reference behind a four-function C ABI, with a tool that measures how well the two agree.
 
@@ -84,4 +86,5 @@ apply to CRY and to the parts here that reproduce it. See `NOTICE`. cryjax is no
 ## Citing
 
 Please cite the release you used: `CITATION.cff` holds the metadata (GitHub's "Cite this repository" renders it), and
-each tagged release is archived on Zenodo with its own DOI.
+each tagged release is archived on Zenodo with its own DOI. The concept DOI
+[10.5281/zenodo.24418660](https://doi.org/10.5281/zenodo.24418660) covers every version and resolves to the latest one.
