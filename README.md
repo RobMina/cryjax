@@ -63,9 +63,9 @@ python -m cryjax.compare --a device --b native --shards 10 --showers 100000 --ou
 
 | Setting | Device vs | Result |
 |---|---|---|
-| sea level, 300 m, latitude 41.8, 2021-06-21 | an experiment's stock CRY generator, after its detector projection (mu2e-fastsim, 2026-11-03: 100 + 100 shards of 50,000 accepted events) | accepted rate per live second 1.00014 +- 0.00063, species rates within errors, no bin flagged among 2,534 (Bonferroni) |
-| sea level, raw showers | the C++ shim (`cryjax.compare`) | to be run for the first release |
-| 2100 m, 11300 m, other latitudes and dates | the C++ shim | to be run; the table structure is checked by the tests |
+| 0, 2100 and 11300 m, latitude 41.8, 2021-06-21; float64, and float32 at 0 m | the C++ CRY 1.7 reference (`cryjax.compare`), 40 x 250,000 raw showers per arm | agree: shower rate within 0.06 %, every species within its errors, no spectrum bin flagged ([report](docs/validation.md)) |
+| sea level, 300 m, after an experiment's detector projection | that experiment's stock CRY generator (mu2e-fastsim, 2026-11-03: 100 + 100 shards of 50,000 accepted events) | accepted rate per live second 1.00014 +- 0.00063, species rates within errors, no bin flagged among 2,534 (Bonferroni) |
+| other latitudes and dates | | not compared; the table setup is checked by the tests |
 
 ## Tests
 
