@@ -4,6 +4,7 @@ type: software
 title: "cryjax: the CRY 1.7 cosmic-ray shower model on JAX devices"
 version: "0.1.1"
 date-released: "2026-11-20"
+doi: "10.5281/zenodo.24418660"
 authors:
   - family-names: Mina
     given-names: Rob
